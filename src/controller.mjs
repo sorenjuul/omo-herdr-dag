@@ -39,6 +39,7 @@ export class DagPane {
     this.runs = [];
     this.stopped = false;
     this.tasks = [];
+    this.shells = new Map();
     this.taskData = new TaskData({ cwd, sessionId, stateDir: taskStateDir, notify,
       onChange: () => { if (!this.stopped) this.enqueue(() => this.save(true)); } });
   }
@@ -84,6 +85,27 @@ export class DagPane {
     });
   }
 
+  // Local patch: background bash sessions from senpi's wake_source_state event.
+  // The event carries only the live set, so a missing id means the session exited.
+  receiveShells(items) {
+    if (this.stopped || !Array.isArray(items)) return Promise.resolve();
+    return this.enqueue(async () => {
+      const now = new Date().toISOString();
+      const live = new Set();
+      for (const item of items) {
+        if (typeof item?.id !== 'string') continue;
+        live.add(item.id);
+        const startedAt = Number.isFinite(item.startedAtMs) ? new Date(item.startedAtMs).toISOString() : now;
+        this.shells.set(item.id, { id: `bash:${item.id}`, description: item.description ?? item.id,
+          agent: 'bash', status: 'running', startedAt });
+      }
+      for (const [id, shell] of this.shells) {
+        if (!live.has(id) && shell.status === 'running') this.shells.set(id, { ...shell, status: 'exited', completedAt: now });
+      }
+      await this.save(true);
+    });
+  }
+
   async restoreRuns(runs = this.runs, preferLive = false) {
     let files;
     try { files = await readdir(this.checkpointDir); }
@@ -105,7 +127,7 @@ export class DagPane {
   }
 
   async save(connected) {
-    this.tasks = await this.taskData.refresh(this.runs);
+    this.tasks = [...await this.taskData.refresh(this.runs), ...this.shells.values()];
     await writeJson(this.stateFile, { version: 1, sessionId: this.sessionId, connected, language: this.language,
       updatedAt: new Date().toISOString(), runs: this.runs, tasks: this.tasks });
     // All callers serialize saves through the queue, including task-only disk changes.

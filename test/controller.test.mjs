@@ -303,3 +303,19 @@ test('task-only events update snapshots; reload restores completed details witho
   await reloaded.stop();
   assert.equal((await readJson(reloaded.stateFile)).connected, false);
 });
+
+test('background shell sessions open the pane and become exited when they leave the live set', async t => {
+  const { calls, controller } = await setup(t);
+  await controller.start();
+  assert.equal(calls.filter(call => call[0] === 'split').length, 0);
+  await controller.receiveShells([{ id: 'bash_1', description: 'npm run lint', startedAtMs: Date.parse('2026-09-30T14:36:35.839Z') }]);
+  let state = await readJson(controller.stateFile);
+  assert.deepEqual(state.tasks, [{ id: 'bash:bash_1', description: 'npm run lint', agent: 'bash', status: 'running',
+    startedAt: '2026-09-30T14:36:35.839Z' }]);
+  assert.equal(calls.filter(call => call[0] === 'split').length, 1);
+  await controller.receiveShells([]);
+  state = await readJson(controller.stateFile);
+  assert.equal(state.tasks[0].status, 'exited');
+  assert.ok(state.tasks[0].completedAt >= state.tasks[0].startedAt);
+  assert.equal(calls.filter(call => call[0] === 'split').length, 1);
+});

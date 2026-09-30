@@ -2,7 +2,7 @@ export const messages = {
   en: {
     pending: 'Pending', blocked: 'Blocked', scheduled: 'Scheduled', running: 'Running', paused: 'Paused',
     completed: 'Completed', failed: 'Failed', cancelled: 'Cancelled', skipped: 'Skipped',
-    error: 'Error', interrupted: 'Interrupted', lost: 'Lost', tasks: 'Tasks', category: 'Category',
+    error: 'Error', interrupted: 'Interrupted', lost: 'Lost', exited: 'Exited', tasks: 'Tasks', category: 'Category',
     startNode: 'Start node', sameFrontier: 'Same frontier', emptyTitle: 'Your next workflow DAG will appear here.',
     readError: 'Read error: {error}', keepLast: 'Keeping the last valid snapshot.',
     doneCount: 'Done {done}/{total}', failedCount: 'Failed {count}', graphError: 'Graph error: {error}',
@@ -32,7 +32,7 @@ export const messages = {
   ko: {
     pending: '대기', blocked: '의존 대기', scheduled: '배정', running: '실행 중', paused: '일시정지',
     completed: '완료', failed: '실패', cancelled: '취소', skipped: '건너뜀',
-    error: '오류', interrupted: '중단', lost: '유실', tasks: '일반 작업', category: '카테고리',
+    error: '오류', interrupted: '중단', lost: '유실', exited: '종료됨', tasks: '일반 작업', category: '카테고리',
     startNode: '시작 노드', sameFrontier: '같은 실행 단계', emptyTitle: 'DAG가 생성되면 여기에 표시합니다.',
     readError: '읽기 오류: {error}', keepLast: '마지막 정상 화면을 유지합니다.',
     doneCount: '완료 {done}/{total}', failedCount: '실패 {count}', graphError: '그래프 오류: {error}',

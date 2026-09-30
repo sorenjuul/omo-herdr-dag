@@ -18,9 +18,12 @@ export default function extension(pi) {
   const viewer = join(dirname(fileURLToPath(import.meta.url)), 'src/viewer.mjs');
   const stateDir = process.env.OMO_HERDR_DAG_STATE_DIR ?? join(homedir(), '.omo', 'agent', 'herdr-dag');
 
+  let unsubscribeShells;
   async function stop() {
     unsubscribe?.();
     unsubscribe = undefined;
+    unsubscribeShells?.();
+    unsubscribeShells = undefined;
     await controller?.stop();
     controller = undefined;
   }
@@ -41,6 +44,11 @@ export default function extension(pi) {
       // DagPane.enqueue reports rejected jobs; the event bus cannot await them.
       try { void (event.name === 'omo.dag.updated' ? controller?.receive(event.data) : controller?.receiveTasks(event.data))?.catch(() => {}); }
       catch (error) { ctx.ui.notify(`DAG pane: ${error.message}`, 'warning'); }
+    });
+    // Local patch: senpi's terminal builtin emits the live background bash set on this event.
+    unsubscribeShells = pi.events.on('wake_source_state', event => {
+      if (event?.source !== 'terminal-background-sessions') return;
+      void controller?.receiveShells(event.items)?.catch(() => {});
     });
     await controller.start().catch(() => {}); // The queue reports startup errors to the UI.
   });

@@ -28,7 +28,7 @@ export function fit(text, columns, pad = false) {
   if (truncated) { out += '…'; used += 1; }
   return out + (pad ? ' '.repeat(Math.max(0, columns - used)) : '');
 }
-const icons = { pending: '○', blocked: '◌', scheduled: '◷', running: '●', paused: 'Ⅱ', completed: '✓', failed: '×', cancelled: '−', skipped: '·', error: '×', interrupted: '−', lost: '?' };
+const icons = { pending: '○', blocked: '◌', scheduled: '◷', running: '●', paused: 'Ⅱ', completed: '✓', failed: '×', cancelled: '−', skipped: '·', error: '×', interrupted: '−', lost: '?', exited: '■' };
 const colors = { running: '36', completed: '32', failed: '31', blocked: '33', paused: '33', scheduled: '36', error: '31' };
 const accent = '36';
 const paint = (text, color, enabled) => enabled && color ? `\x1b[${color}m${text}\x1b[0m` : text;
